@@ -1,0 +1,10 @@
+
+[selection]
+save_to_clipboard = true
+
+[font]
+size = 12.0
+normal = { family = "Hack Nerd Font", style = "Regular" }
+
+[general]
+import = ["dracula.toml"]

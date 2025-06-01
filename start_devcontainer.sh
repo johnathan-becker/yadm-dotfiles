@@ -29,14 +29,25 @@ else
 fi
 
 SELECTED_DEVCONTAINER="${DEVCONTAINERS[$choice]}"
-FOLDER_PATH=$(basename "$(dirname $SELECTED_DEVCONTAINER)")
+FOLDER_PATH=$(basename "$(dirname "$SELECTED_DEVCONTAINER")")
 
+# Check if a matching container is already running
+CONTAINER_ID=$(docker ps --format "{{.ID}} {{.Image}} {{.Names}}" | grep "$FOLDER_PATH" | awk '{print $1}' | head -n 1)
+
+if [ -n "$CONTAINER_ID" ]; then
+  echo "✅ Container for '$FOLDER_PATH' is already running: $CONTAINER_ID"
+  echo "🔧 Dropping into the running container..."
+  docker exec -u root -it "$CONTAINER_ID" zsh
+  exit 0
+fi
+
+# If not running, continue with devcontainer up
 echo "🚀 Starting dev container at: /$SELECTED_DEVCONTAINER"
 echo "   Selected container arch is $FOLDER_PATH"
-#devcontainer up --workspace-folder $PWD --config "$SELECTED_DEVCONTAINER"
+devcontainer up --workspace-folder "$PWD" --config "$SELECTED_DEVCONTAINER"
 
-# Grep docker ps output for the matching container name
-CONTAINER_ID=$(docker ps --format "{{.ID}} {{.Image}}" | grep "$FOLDER_PATH" | awk '{print $1}' | head -n 1)
+# Re-fetch the container ID
+CONTAINER_ID=$(docker ps --format "{{.ID}} {{.Image}} {{.Names}}" | grep "$FOLDER_PATH" | awk '{print $1}' | head -n 1)
 
 if [ -z "$CONTAINER_ID" ]; then
   echo "❌ Failed to detect the dev container's Docker ID."
@@ -47,15 +58,28 @@ fi
 
 # Copy setup script into the container
 echo "📄 Copying setup.sh into the container..."
-docker cp $HOME/Documents/setup_script.sh "$CONTAINER_ID":/tmp/setup.sh
+docker cp "$HOME/setup_environment.sh" "$CONTAINER_ID":/tmp/setup.sh
 docker exec -u root "$CONTAINER_ID" chmod +x /tmp/setup.sh
 
 # Execute setup script
 echo "⚙️ Running setup.sh inside container..."
 docker exec -u root -it "$CONTAINER_ID" /tmp/setup.sh
 
+# Sync dotfiles
+echo "🗃️ Syncing dotfiles via yadm list..."
+
+if ! command -v yadm &>/dev/null; then
+  echo "❌ yadm not found on host. Skipping dotfile sync."
+else
+  while IFS= read -r file; do
+    src="$HOME/$file"
+    dest="/home/root/$file"
+    echo "📁 Copying: $file"
+    docker exec "$CONTAINER_ID" mkdir -p "$(dirname "$dest")"
+    docker cp "$src" "$CONTAINER_ID":"$dest"
+  done < <(yadm list -a)
+fi
+
 # Get into container
 echo "🔧 Dropping into the container..."
-
-# Replace this with your preferred shell, e.g., zsh or bash
 docker exec -u root -it "$CONTAINER_ID" zsh

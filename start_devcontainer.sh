@@ -37,7 +37,7 @@ CONTAINER_ID=$(docker ps --format "{{.ID}} {{.Image}} {{.Names}}" | grep "$FOLDE
 if [ -n "$CONTAINER_ID" ]; then
   echo "✅ Container for '$FOLDER_PATH' is already running: $CONTAINER_ID"
   echo "🔧 Dropping into the running container..."
-  docker exec -u root -it "$CONTAINER_ID" zsh
+  docker exec -it "$CONTAINER_ID" zsh
   exit 0
 fi
 
@@ -59,11 +59,11 @@ fi
 # Copy setup script into the container
 echo "📄 Copying setup.sh into the container..."
 docker cp "$HOME/setup_environment.sh" "$CONTAINER_ID":/tmp/setup.sh
-docker exec -u root "$CONTAINER_ID" chmod +x /tmp/setup.sh
+docker exec "$CONTAINER_ID" chmod +x /tmp/setup.sh
 
 # Execute setup script
 echo "⚙️ Running setup.sh inside container..."
-docker exec -u root -it "$CONTAINER_ID" /tmp/setup.sh
+docker exec -it "$CONTAINER_ID" /tmp/setup.sh
 
 # Sync dotfiles
 echo "🗃️ Syncing dotfiles via yadm list..."
@@ -73,8 +73,8 @@ if ! command -v yadm &>/dev/null; then
 else
   while IFS= read -r file; do
     src="$HOME/$file"
-    dest="/home/root/$file"
-    echo "📁 Copying: $file"
+    dest="/root/$file"
+    echo "📁 Copying: $file from ${src} to ${dest}"
     docker exec "$CONTAINER_ID" mkdir -p "$(dirname "$dest")"
     docker cp "$src" "$CONTAINER_ID":"$dest"
   done < <(yadm list -a)
@@ -82,4 +82,4 @@ fi
 
 # Get into container
 echo "🔧 Dropping into the container..."
-docker exec -u root -it "$CONTAINER_ID" zsh
+docker exec -it "$CONTAINER_ID" zsh

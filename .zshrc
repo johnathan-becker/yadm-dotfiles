@@ -78,8 +78,14 @@ source $ZSH/oh-my-zsh.sh
 #
 # Source NVM (safe for both bash/zsh)
 export NVM_DIR="$HOME/.config/nvm"
-chmod +x $NVM_DIR/nvm.sh
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+if [ -d $NVM_DIR ]; then
+  chmod +x $NVM_DIR/nvm.sh
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+fi
+
+# Add pathing for dev container nvim
+export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+
 # Use eza instead of ls, with colors, icons, and grouping directories first
 alias ls='eza --icons --group-directories-first'
 
@@ -130,8 +136,12 @@ alias ltg='eza --tree --level=2 --git --icons'
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+if [ -d /usr/share/zsh-syntax-highlighting ]; then
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
 
 export NVM_DIR="$HOME/.config/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+if [ -d $NVM_DIR ]; then
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+fi

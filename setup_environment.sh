@@ -42,7 +42,7 @@ if [[ "$PKG_MANAGER" == "apt" ]]; then
     libssl-dev pkg-config libxcb-shape0-dev \
     libxcb-xfixes0-dev libxkbcommon-dev \
     python3 python3-pip python3-venv \
-    zsh tmux ripgrep fd-find fzf \
+    zsh tmux ripgrep fd-find fzf lua5.4 luarocks \
     bat cmake libfreetype6-dev libfontconfig1-dev
   if ! is_container; then
     $SUDO apt install -y fonts-hack-ttf
@@ -52,7 +52,7 @@ else
     curl git unzip zip tar gcc make \
     openssl-devel pkgconfig \
     xcb-util xcb-util-devel libxkbcommon-devel \
-    python3 python3-pip \
+    python3 python3-pip lua luarocks \
     zsh tmux ripgrep fzf cmake fontconfig fontconfig-devel
 
   # Bat (batcat workaround)
@@ -132,11 +132,6 @@ fi
 if [ ! -d "$HOME/.pathpicker" ]; then
   git clone https://github.com/facebook/PathPicker.git "$HOME/.pathpicker"
   $SUDO ln -sf "$HOME/.pathpicker/fpp" /usr/local/bin/fpp
-fi
-
-# ──🔵 Lua + LuaRocks ─────────────────────────────────────────────────────────────
-if ! command -v luarocks &>/dev/null; then
-  $SUDO $PKG_MANAGER install -y lua luarocks
 fi
 
 # ──💎 Ruby ───────────────────────────────────────────────────────────────────────

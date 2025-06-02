@@ -70,7 +70,7 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git cp debian docker docker-compose dotenv emacs fasd gem git-lfs gitignore golang history history-substring-search jenv jump last-working-dir node npm nvm perl pip pipenv pyenv python rbenv rust rvm screen sublime sudo systemd thefuck tig tmux ubuntu vagrant vagrant-prompt vi-mode vscode wd)
+plugins=(git cp debian docker docker-compose dotenv emacs fasd gem git-lfs gitignore golang history history-substring-search jenv jump last-working-dir node npm nvm perl pip pipenv pyenv python rbenv rust rvm screen sublime sudo systemd tig tmux ubuntu vagrant vagrant-prompt vi-mode vscode wd)
 
 source $ZSH/oh-my-zsh.sh
 

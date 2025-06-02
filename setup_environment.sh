@@ -103,10 +103,15 @@ fi
 
 # ──📝 Neovim (latest) ────────────────────────────────────────────────────────────
 if ! command -v nvim &>/dev/null; then
-  curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
-  $SUDO tar -C /opt -xzf nvim-linux-x86_64.tar.gz
-  $SUDO ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
-  rm nvim-linux-x86_64.tar.gz
+  # Clone the Neovim repository
+  git clone https://github.com/neovim/neovim.git
+  cd neovim
+  # Checkout the desired version
+  git checkout v0.11.0
+  # Build Neovim
+  make CMAKE_BUILD_TYPE=Release
+  # Install Neovim
+  $SUDO make install
 fi
 
 # ──🧲 LazyGit ────────────────────────────────────────────────────────────────────
@@ -116,6 +121,11 @@ if ! command -v lazygit &>/dev/null; then
   tar xf lazygit.tar.gz lazygit
   $SUDO install lazygit /usr/local/bin
   rm lazygit lazygit.tar.gz
+fi
+
+# ──🔵    Lazy Git     ─────────────────────────────────────────────────────────────
+if ! is_container && ! command -v lazydocker &>/dev/null; then
+  curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
 fi
 
 # ──🧠 PathPicker ─────────────────────────────────────────────────────────────────

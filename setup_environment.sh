@@ -172,14 +172,6 @@ if ! is_container; then
   fi
 fi
 
-# ──🧠 LazyVim ────────────────────────────────────────────────────────────────────
-NVIM_CONFIG_DIR="$HOME/.config/nvim"
-if [ ! -d "$NVIM_CONFIG_DIR" ]; then
-  git clone https://github.com/LazyVim/starter "$NVIM_CONFIG_DIR"
-  rm -rf "$NVIM_CONFIG_DIR/.git"
-  nvim --headless "+Lazy! sync" +qa
-fi
-
 # ──🟢 NVM + Node + npm ───────────────────────────────────────────────────────────
 if ! command -v node &>/dev/null || ! command -v npm &>/dev/null; then
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash

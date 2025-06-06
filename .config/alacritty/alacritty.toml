@@ -8,3 +8,7 @@ normal = { family = "Hack Nerd Font", style = "Regular" }
 
 [general]
 import = ["dracula.toml"]
+
+[terminal]
+osc52 = "CopyPaste"
+

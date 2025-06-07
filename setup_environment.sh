@@ -37,7 +37,7 @@ $SUDO $PKG_MANAGER -y upgrade || true
 
 echo "📦 Installing base dev tools..."
 if [[ "$PKG_MANAGER" == "apt" ]]; then
-  $SUDO apt install -y \
+  $SUDO $PKG_MANAGER install -y \
     curl git unzip zip tar build-essential \
     libssl-dev pkg-config libxcb-shape0-dev \
     libxcb-xfixes0-dev libxkbcommon-dev \
@@ -45,7 +45,7 @@ if [[ "$PKG_MANAGER" == "apt" ]]; then
     zsh tmux ripgrep fd-find fzf lua5.4 luarocks \
     bat cmake libfreetype6-dev libfontconfig1-dev
   if ! is_container; then
-    $SUDO apt install -y fonts-hack-ttf
+    $SUDO $PKG_MANAGER install -y fonts-hack-ttf
   fi
 else
   $SUDO $PKG_MANAGER install -y \
@@ -86,9 +86,9 @@ if ! command -v cargo &>/dev/null; then
   source "$HOME/.cargo/env"
 fi
 
-# ──🖼️ Alacritty (host only) ─────────────────────────────────────────────────────
-if ! is_container && ! command -v alacritty &>/dev/null; then
-  cargo install alacritty
+# ──🖼️ Kitty (host only) ─────────────────────────────────────────────────────
+if ! is_container && ! command -v kitty &>/dev/null; then
+  curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
 fi
 
 # ──🧭 eza ────────────────────────────────────────────────────────────────────────
@@ -128,6 +128,30 @@ if ! is_container && ! command -v lazydocker &>/dev/null; then
   curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
 fi
 
+# ──🧷    i3          ─────────────────────────────────────────────────────────────
+if ! is_container && ! command -v i3 &>/dev/null; then
+  $SUDO $PKG_MANAGER install -y i3
+fi
+
+# ──🧷  i3status-rust ─────────────────────────────────────────────────────────────
+if ! is_container && ! -d ~/i3status-rust &>/dev/null; then
+  if [[ "$PKG_MANAGER" == "apt" ]]; then
+      $SUDO $PKG_MANAGER install -y libsensors-dev libpulse-dev libnotmuch-dev libpipewire-0.3-dev
+  else
+      $SUDO $PKG_MANAGER install -y lm_sensors-devel pulseaudio-libs-devel notmuch-devel pipewire-devel
+  fi
+  git clone https://github.com/greshake/i3status-rust.git ~/i3status-rust
+  cd ~/i3status-rust
+  cargo install --path . --locked
+  ./install.sh
+fi
+
+# ──🧷  i3status-rofi ─────────────────────────────────────────────────────────────
+if ! is_container && ! -d ~/i3status-rust &>/dev/null; then
+  $SUDO $PKGMANAGER install -y rofi 
+fi
+
+
 # ──🧠 PathPicker ─────────────────────────────────────────────────────────────────
 if [ ! -d "$HOME/.pathpicker" ]; then
   git clone https://github.com/facebook/PathPicker.git "$HOME/.pathpicker"
@@ -160,16 +184,6 @@ if [ ! -d "$HOME/.config/tmux" ]; then
   mkdir -p ~/.config/tmux
   ln -sf ~/oh-my-tmux/.tmux.conf ~/.config/tmux/tmux.conf
   cp ~/oh-my-tmux/.tmux.conf.local ~/.config/tmux/tmux.conf.local
-fi
-
-# ──🎨 Alacritty Theme (host only) ────────────────────────────────────────────────
-if ! is_container; then
-  ALACRITTY_CONFIG_DIR="$HOME/.config/alacritty"
-  DRACULA_TOML="$ALACRITTY_CONFIG_DIR/dracula.toml"
-  mkdir -p "$ALACRITTY_CONFIG_DIR"
-  if [ ! -f "$DRACULA_TOML" ]; then
-    curl -sLo "$DRACULA_TOML" https://raw.githubusercontent.com/dracula/alacritty/master/dracula.toml
-  fi
 fi
 
 # ──🟢 NVM + Node + npm ───────────────────────────────────────────────────────────

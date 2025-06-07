@@ -101,6 +101,17 @@ if ! command -v zoxide &>/dev/null; then
   curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
 fi
 
+# ──📁 yazi ─────────────────────────────────────────────────────────────────────
+if ! command -v yazi &>/dev/null; then
+  if [[ "$PKG_MANAGER" == "apt" ]]; then
+    $SUDO snap install yazi --classic
+  else
+    $SUDO dnf copr enable lihaohong/yazi
+    $SUDO dnf install yazi
+  fi
+fi
+
+
 # ──📝 Neovim (latest) ────────────────────────────────────────────────────────────
 if ! command -v nvim &>/dev/null; then
   # Clone the Neovim repository

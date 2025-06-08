@@ -96,6 +96,11 @@ if ! command -v eza &>/dev/null; then
   cargo install eza
 fi
 
+# ──🧭 tms ────────────────────────────────────────────────────────────────────────
+if ! command -v tms &>/dev/null; then
+  cargo install tms
+fi
+
 # ──📁 zoxide ─────────────────────────────────────────────────────────────────────
 if ! command -v zoxide &>/dev/null; then
   curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
@@ -187,14 +192,6 @@ fi
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
   export RUNZSH=no
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-fi
-
-# ──🪟 oh-my-tmux ─────────────────────────────────────────────────────────────────
-if [ ! -d "$HOME/.config/tmux" ]; then
-  git clone --single-branch https://github.com/gpakosz/.tmux.git ~/oh-my-tmux
-  mkdir -p ~/.config/tmux
-  ln -sf ~/oh-my-tmux/.tmux.conf ~/.config/tmux/tmux.conf
-  cp ~/oh-my-tmux/.tmux.conf.local ~/.config/tmux/tmux.conf.local
 fi
 
 # ──🟢 NVM + Node + npm ───────────────────────────────────────────────────────────

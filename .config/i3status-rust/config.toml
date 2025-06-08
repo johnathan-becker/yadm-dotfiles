@@ -1,7 +1,7 @@
 icons_format = "{icon}"
 
 [theme]
-theme = "solarized-dark"
+theme = "dracula"
 [theme.overrides]
 idle_bg = "#123456"
 idle_fg = "#abcdef"

@@ -147,7 +147,7 @@ if ! is_container && ! command -v i3 &>/dev/null; then
   $SUDO $PKG_MANAGER install -y i3
 fi
 
-──🧷 i3status-rust ─────────────────────────────────────────────────────────────
+# ──🧷 i3status-rust ─────────────────────────────────────────────────────────────
 if ! is_container && ! -d ~/i3status-rust &>/dev/null; then
   if [[ "$PKG_MANAGER" == "apt" ]]; then
     $SUDO $PKG_MANAGER install -y libsensors-dev libpulse-dev libnotmuch-dev libpipewire-0.3-dev

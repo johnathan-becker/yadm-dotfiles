@@ -108,17 +108,12 @@ fi
 
 # ──📁 yazi ─────────────────────────────────────────────────────────────────────
 if ! command -v yazi &>/dev/null; then
-  if [[ "$PKG_MANAGER" == "apt" ]]; then
-    $SUDO snap install yazi --classic
-  else
-    $SUDO dnf copr enable lihaohong/yazi
-    $SUDO dnf install yazi
-  fi
+  cargo install --locked yazi-fm yazi-cli
 fi
-
 
 # ──📝 Neovim (latest) ────────────────────────────────────────────────────────────
 if ! command -v nvim &>/dev/null; then
+  echo "Installing neovim!!!"
   # Clone the Neovim repository
   git clone https://github.com/neovim/neovim.git
   cd neovim
@@ -132,6 +127,7 @@ fi
 
 # ──🧲 LazyGit ────────────────────────────────────────────────────────────────────
 if ! command -v lazygit &>/dev/null; then
+  echo "Install lazygit!!!"
   LAZYGIT_VERSION=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep tag_name | cut -d '"' -f 4)
   curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION#v}_Linux_x86_64.tar.gz"
   tar xf lazygit.tar.gz lazygit
@@ -139,22 +135,24 @@ if ! command -v lazygit &>/dev/null; then
   rm lazygit lazygit.tar.gz
 fi
 
-# ──🔵    Lazy Git     ─────────────────────────────────────────────────────────────
+# ──🔵    Lazy Docker   ─────────────────────────────────────────────────────────────
 if ! is_container && ! command -v lazydocker &>/dev/null; then
+  echo "Installing lazydocker!!!"
   curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
 fi
 
 # ──🧷    i3          ─────────────────────────────────────────────────────────────
 if ! is_container && ! command -v i3 &>/dev/null; then
+  echo "Installing i3!!!!"
   $SUDO $PKG_MANAGER install -y i3
 fi
 
-# ──🧷  i3status-rust ─────────────────────────────────────────────────────────────
+──🧷 i3status-rust ─────────────────────────────────────────────────────────────
 if ! is_container && ! -d ~/i3status-rust &>/dev/null; then
   if [[ "$PKG_MANAGER" == "apt" ]]; then
-      $SUDO $PKG_MANAGER install -y libsensors-dev libpulse-dev libnotmuch-dev libpipewire-0.3-dev
+    $SUDO $PKG_MANAGER install -y libsensors-dev libpulse-dev libnotmuch-dev libpipewire-0.3-dev
   else
-      $SUDO $PKG_MANAGER install -y lm_sensors-devel pulseaudio-libs-devel notmuch-devel pipewire-devel
+    $SUDO $PKG_MANAGER install -y lm_sensors-devel pulseaudio-libs-devel notmuch-devel pipewire-devel
   fi
   git clone https://github.com/greshake/i3status-rust.git ~/i3status-rust
   cd ~/i3status-rust
@@ -162,25 +160,28 @@ if ! is_container && ! -d ~/i3status-rust &>/dev/null; then
   ./install.sh
 fi
 
-# ──🧷  i3status-rofi ─────────────────────────────────────────────────────────────
-if ! is_container && ! -d ~/i3status-rust &>/dev/null; then
-  $SUDO $PKGMANAGER install -y rofi 
+# ──🧷  rofi ─────────────────────────────────────────────────────────────
+if ! is_container && ! command -v rofi &>/dev/null; then
+  echo "Installing rofi!!!"
+  $SUDO $PKG_MANAGER install -y rofi
 fi
-
 
 # ──🧠 PathPicker ─────────────────────────────────────────────────────────────────
 if [ ! -d "$HOME/.pathpicker" ]; then
+  echo "Installing PathPicker!!!"
   git clone https://github.com/facebook/PathPicker.git "$HOME/.pathpicker"
   $SUDO ln -sf "$HOME/.pathpicker/fpp" /usr/local/bin/fpp
 fi
 
 # ──💎 Ruby ───────────────────────────────────────────────────────────────────────
 if ! command -v ruby &>/dev/null; then
+  echo "Installing Ruby!!!"
   $SUDO $PKG_MANAGER install -y ruby ruby-devel || $SUDO $PKG_MANAGER install -y ruby-full
 fi
 
 # ──🔤 Nerd Font (host only) ──────────────────────────────────────────────────────
 if ! is_container && [ ! -f "$HOME/.local/share/fonts/Hack Regular Nerd Font Complete.ttf" ]; then
+  echo "Installing Nerd Fonts"
   mkdir -p "$HOME/.local/share/fonts"
   curl -Lo "$HOME/.local/share/fonts/Hack.zip" https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Hack.zip
   unzip -o "$HOME/.local/share/fonts/Hack.zip" -d "$HOME/.local/share/fonts/Hack"
@@ -190,12 +191,14 @@ fi
 
 # ──🧙 oh-my-zsh ──────────────────────────────────────────────────────────────────
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
+  echo "Installing oh-my-zsh"
   export RUNZSH=no
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 fi
 
 # ──🟢 NVM + Node + npm ───────────────────────────────────────────────────────────
 if ! command -v node &>/dev/null || ! command -v npm &>/dev/null; then
+  echo "Installing NVM!!!"
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
@@ -205,6 +208,7 @@ fi
 
 # ──🧰 Devcontainer CLI ───────────────────────────────────────────────────────────
 if ! command -v devcontainer &>/dev/null; then
+  echo "Installing devcontainers!!!"
   npm install -g @devcontainers/cli
 fi
 

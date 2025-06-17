@@ -13,6 +13,19 @@ bat = ["|E|", "|_|", "|=|", "|F|"]
 bat_charging = "|^| "
 
 [[block]]
+block = "temperature"
+format = " $icon $max max "
+format_alt = " $icon $min min, $max max, $average avg "
+interval = 10
+chip = "*-isa-*"
+
+[[block]]
+block = "amd_gpu"
+format = "AMD $icon $utilization "
+format_alt = " $icon MEM: $vram_used_percents ($vram_used/$vram_total) "
+interval = 1
+
+[[block]]
 block = "cpu"
 info_cpu = 20
 warning_cpu = 50

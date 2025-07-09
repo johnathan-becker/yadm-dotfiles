@@ -48,12 +48,11 @@ if [[ "$PKG_MANAGER" == "apt" ]]; then
     $SUDO $PKG_MANAGER install -y fonts-hack-ttf
   fi
 else
-  $SUDO $PKG_MANAGER install -y \
+  $SUDO $PKG_MANAGER install -y --skip-broken \
     curl git unzip zip tar gcc make \
     openssl-devel pkgconfig \
-    xcb-util xcb-util-devel libxkbcommon-devel \
-    python3 python3-pip lua luarocks \
-    zsh tmux ripgrep fzf cmake fontconfig fontconfig-devel
+    xcb-util python3 python3-pip lua luarocks \
+    zsh ripgrep fzf cmake fontconfig fontconfig-devel
 
   # Bat (batcat workaround)
   if ! command -v bat &>/dev/null; then
@@ -141,25 +140,6 @@ if ! is_container && ! command -v lazydocker &>/dev/null; then
   curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
 fi
 
-# ──🧷    i3          ─────────────────────────────────────────────────────────────
-if ! is_container && ! command -v i3 &>/dev/null; then
-  echo "Installing i3!!!!"
-  $SUDO $PKG_MANAGER install -y i3
-fi
-
-# ──🧷 i3status-rust ─────────────────────────────────────────────────────────────
-if ! is_container && ! -d ~/i3status-rust &>/dev/null; then
-  if [[ "$PKG_MANAGER" == "apt" ]]; then
-    $SUDO $PKG_MANAGER install -y libsensors-dev libpulse-dev libnotmuch-dev libpipewire-0.3-dev
-  else
-    $SUDO $PKG_MANAGER install -y lm_sensors-devel pulseaudio-libs-devel notmuch-devel pipewire-devel
-  fi
-  git clone https://github.com/greshake/i3status-rust.git ~/i3status-rust
-  cd ~/i3status-rust
-  cargo install --path . --locked
-  ./install.sh
-fi
-
 # ──🧷  rofi ─────────────────────────────────────────────────────────────
 if ! is_container && ! command -v rofi &>/dev/null; then
   echo "Installing rofi!!!"
@@ -194,6 +174,12 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
   echo "Installing oh-my-zsh"
   export RUNZSH=no
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+fi
+
+# ──🧙 starship ──────────────────────────────────────────────────────────────────
+if ! command -v starship &>/dev/null; then
+  echo "Installing starship"
+  curl -sS https://starship.rs/install.sh | sh
 fi
 
 # ──🟢 NVM + Node + npm ───────────────────────────────────────────────────────────

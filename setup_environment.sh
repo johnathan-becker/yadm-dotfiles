@@ -117,7 +117,7 @@ if ! command -v nvim &>/dev/null; then
   git clone https://github.com/neovim/neovim.git
   cd neovim
   # Checkout the desired version
-  git checkout v0.11.0
+  git checkout v0.11.5
   # Build Neovim
   make CMAKE_BUILD_TYPE=Release
   # Install Neovim

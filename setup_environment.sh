@@ -107,7 +107,7 @@ fi
 
 # ──📁 yazi ─────────────────────────────────────────────────────────────────────
 if ! command -v yazi &>/dev/null; then
-  cargo install --locked yazi-fm yazi-cli
+  cargo install --locked --force yazi-build
 fi
 
 # ──📝 Neovim (latest) ────────────────────────────────────────────────────────────

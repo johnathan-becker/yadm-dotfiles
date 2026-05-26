@@ -65,6 +65,9 @@ docker exec "$CONTAINER_ID" chmod +x /tmp/setup.sh
 echo "⚙️ Running setup.sh inside container..."
 docker exec -it "$CONTAINER_ID" /tmp/setup.sh
 
+# Copy build_epf
+docker cp "$HOME/build_epf.sh" "$CONTAINER_ID":"/workspaces/"
+
 # Sync dotfiles
 echo "🗃️ Syncing dotfiles via yadm list..."
 

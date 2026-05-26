@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# workspace-mount — add/remove folder mounts in a running dev container
+#
+# Usage:
+#   workspace-mount link   [host-dir]    # browse host-dir, pick folder to mount
+#   workspace-mount unlink               # pick a /workspaces/ mount to remove
+#
+# host-dir defaults to ~/Development.
+# Requires: curl, jq, sudo, python3, workspace-mount-helper (same dir)
+
+SOCKET=/var/run/docker.sock
+WORKSPACES_DIR="/workspaces"
+HELPER="$(dirname "$(realpath "$0")")/workspace-mount-helper"
+
+die()  { echo "❌ $*" >&2; exit 1; }
+info() { echo "✅ $*"; }
+
+[[ -f "$HELPER" ]] || die "workspace-mount-helper not found at $HELPER"
+
+# ── Docker socket helpers ───────────────────────────────────────────────────
+
+docker_get() {
+    curl -sf --unix-socket "$SOCKET" "http://localhost$1"
+}
+
+# ── Container resolution ────────────────────────────────────────────────────
+
+pick_container() {
+    local json
+    json=$(docker_get '/containers/json?filters=%7B%22label%22%3A%5B%22devcontainer.local_folder%22%5D%7D')
+
+    mapfile -t CONTAINER_IDS   < <(echo "$json" | jq -r '.[].Id')
+    mapfile -t CONTAINER_NAMES < <(echo "$json" | jq -r '.[].Names[0] | ltrimstr("/")')
+
+    [[ ${#CONTAINER_IDS[@]} -gt 0 ]] || die "No running dev containers found."
+
+    if [[ ${#CONTAINER_IDS[@]} -eq 1 ]]; then
+        echo "${CONTAINER_IDS[0]}"
+        return
+    fi
+
+    echo "📦 Multiple dev containers running:" >&2
+    for i in "${!CONTAINER_NAMES[@]}"; do
+        echo "  [$i] ${CONTAINER_NAMES[$i]}" >&2
+    done
+    echo -n "Choose a container [0-$((${#CONTAINER_NAMES[@]}-1))]: " >&2
+    read -r choice
+    [[ "$choice" =~ ^[0-9]+$ && "$choice" -lt ${#CONTAINER_IDS[@]} ]] \
+        || die "Invalid choice: $choice"
+    echo "${CONTAINER_IDS[$choice]}"
+}
+
+container_pid() {
+    docker_get "/containers/$1/json" | jq -r '.State.Pid'
+}
+
+# ── Interactive pickers ─────────────────────────────────────────────────────
+
+pick_host_folder() {
+    local base_dir
+    base_dir=$(realpath "$1")
+    [[ -d "$base_dir" ]] || die "Not a directory: $base_dir"
+
+    mapfile -t FOLDERS < <(find "$base_dir" -mindepth 1 -maxdepth 1 -type d \
+        | sort | xargs -I{} basename {})
+
+    [[ ${#FOLDERS[@]} -gt 0 ]] || die "No folders found in $base_dir"
+
+    echo "📂 Folders in $base_dir:" >&2
+    for i in "${!FOLDERS[@]}"; do
+        echo "  [$i] ${FOLDERS[$i]}" >&2
+    done
+    echo -n "Choose a folder to link [0-$((${#FOLDERS[@]}-1))]: " >&2
+    read -r choice
+    [[ "$choice" =~ ^[0-9]+$ && "$choice" -lt ${#FOLDERS[@]} ]] \
+        || die "Invalid choice: $choice"
+    echo "$base_dir/${FOLDERS[$choice]}"
+}
+
+pick_linked_folder() {
+    local pid="$1"
+    # Read mountinfo from inside the container's namespace to find what's
+    # mounted under /workspaces/ (excluding the workspace mount itself)
+    mapfile -t FOLDERS < <(
+        awk '$5 ~ "^/workspaces/[^/]+$" { sub(".*/", "", $5); print $5 }' \
+            "/proc/$pid/mountinfo" | sort -u
+    )
+
+    [[ ${#FOLDERS[@]} -gt 0 ]] || die "No linked folders found."
+
+    echo "📂 Linked folders in $WORKSPACES_DIR:" >&2
+    for i in "${!FOLDERS[@]}"; do
+        echo "  [$i] ${FOLDERS[$i]}" >&2
+    done
+    echo -n "Choose a folder to unlink [0-$((${#FOLDERS[@]}-1))]: " >&2
+    read -r choice
+    [[ "$choice" =~ ^[0-9]+$ && "$choice" -lt ${#FOLDERS[@]} ]] \
+        || die "Invalid choice: $choice"
+    echo "${FOLDERS[$choice]}"
+}
+
+# ── Mount / unmount ─────────────────────────────────────────────────────────
+
+do_link() {
+    local host_dir="${1:-$HOME/Development}"
+    local container
+    container=$(pick_container)
+
+    local pid
+    pid=$(container_pid "$container")
+    [[ "$pid" != "0" ]] || die "Container is not running (PID=0)."
+
+    local host_path
+    host_path=$(pick_host_folder "$host_dir")
+    local name
+    name=$(basename "$host_path")
+    local target="$WORKSPACES_DIR/$name"
+
+    sudo python3 "$HELPER" link "$host_path" "$target" "$pid"
+    info "Linked $host_path → $target"
+}
+
+do_unlink() {
+    local container
+    container=$(pick_container)
+
+    local pid
+    pid=$(container_pid "$container")
+    [[ "$pid" != "0" ]] || die "Container is not running (PID=0)."
+
+    local name
+    name=$(pick_linked_folder "$pid")
+    local target="$WORKSPACES_DIR/$name"
+
+    sudo python3 "$HELPER" unlink "$target" "$pid"
+    info "Unlinked $target"
+}
+
+# ── Entry point ─────────────────────────────────────────────────────────────
+
+CMD="${1:-}"
+case "$CMD" in
+    link)   do_link "${2:-}" ;;
+    unlink) do_unlink ;;
+    *)
+        echo "Usage:"
+        echo "  workspace-mount link   [host-dir]   # default: ~/Development"
+        echo "  workspace-mount unlink"
+        exit 1
+        ;;
+esac
